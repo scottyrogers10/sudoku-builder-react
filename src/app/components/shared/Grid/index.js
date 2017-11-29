@@ -1,13 +1,20 @@
 import React, { Component } from "react";
+import Row from "./Row";
 import styles from "./styles";
 
 class Grid extends Component {
     constructor() {
         super();
 
+        this.difficultyMap = {
+            EASY: 30,
+            MEDIUM: 20,
+            HARD: 15
+        };
+
         this.state = {
             grid: [],
-            difficulty: "easy"
+            difficulty: "EASY"
         };
     }
 
@@ -22,24 +29,6 @@ class Grid extends Component {
         } else {
             return this._fillSlot(grid);
         }
-    }
-
-    _generateRandomGrid(difficulty) {
-        const difficultyMap = {
-            hard: 15,
-            medium: 20,
-            easy: 30
-        };
-
-        const emptyGrid = this._getEmptyGrid(this.props.rows, this.props.columns);
-        const slotsToFill = difficultyMap[difficulty];
-        const populatedGrid = this._getPopulatedGrid([...emptyGrid], slotsToFill);
-
-        this.setState({
-            grid: populatedGrid
-        });
-
-        console.log(populatedGrid);
     }
 
     _getEmptyGrid(rows, columns) {
@@ -112,18 +101,12 @@ class Grid extends Component {
     _isSubGridValid(grid, location, digit) {
         const subSectionsMap = {
             "0": [0, 1, 2],
-            "1": [0, 1, 2],
-            "2": [0, 1, 2],
-            "3": [3, 4, 5],
-            "4": [3, 4, 5],
-            "5": [3, 4, 5],
-            "6": [6, 7, 8],
-            "7": [6, 7, 8],
-            "8": [6, 7, 8]
+            "1": [3, 4, 5],
+            "2": [6, 7, 8]
         };
 
-        const rowSubSections = subSectionsMap[location[0]];
-        const columnSubSections = subSectionsMap[location[1]];
+        const rowSubSections = subSectionsMap[Math.floor(location[0] / 3)];
+        const columnSubSections = subSectionsMap[Math.floor(location[1] / 3)];
         const subGridValues = this._getSubGridValues(grid, rowSubSections, columnSubSections);
 
         return !subGridValues.includes(digit);
@@ -137,12 +120,34 @@ class Grid extends Component {
         return !column.includes(digit);
     }
 
+    generate() {
+        const emptyGrid = this._getEmptyGrid(this.props.rows, this.props.columns);
+        const slotsToFill = this.difficultyMap[this.state.difficulty];
+        const populatedGrid = this._getPopulatedGrid([...emptyGrid], slotsToFill);
+
+        this.setState({
+            grid: populatedGrid
+        });
+    }
+
     componentWillMount() {
-        this._generateRandomGrid(this.state.difficulty);
+        this.generate();
     }
 
     render() {
-        return <div style={{ ...styles.container, ...this.props.style }} />;
+        return (
+            <div style={{ ...styles.container, ...this.props.style }}>
+                <Row data={this.state.grid[0]} />
+                <Row data={this.state.grid[1]} />
+                <Row data={this.state.grid[2]} style={styles.borderSubGrid} />
+                <Row data={this.state.grid[3]} />
+                <Row data={this.state.grid[4]} />
+                <Row data={this.state.grid[5]} style={styles.borderSubGrid} />
+                <Row data={this.state.grid[6]} />
+                <Row data={this.state.grid[7]} />
+                <Row data={this.state.grid[8]} />
+            </div>
+        );
     }
 }
 
