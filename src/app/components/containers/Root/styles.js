@@ -5,11 +5,12 @@ export default {
         top: "50%",
         transform: "translate(-50%, -50%)"
     },
-    generateButtonPosition: {
+    buttonsContainer: {
         textAlign: "center",
         marginTop: "32px"
     },
-    generateButton: {
+    actionButton: {
+        width: "130px",
         border: "1px solid #000",
         borderRadius: "5px",
         cursor: "pointer",
@@ -18,5 +19,8 @@ export default {
         backgroundColor: "#fff",
         fontSize: "16px",
         userSelect: "none"
+    },
+    solveButton: {
+        marginLeft: "20px"
     }
 };

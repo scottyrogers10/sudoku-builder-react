@@ -44,6 +44,25 @@ class Grid extends Component {
         return emptyGrid;
     }
 
+    _getNextUnassignedLocation(grid) {
+        const unassignedLocation = [];
+
+        for (let i = 0; i < this.props.rows; i++) {
+            if (unassignedLocation.length === 0) {
+                for (let j = 0; j < this.props.columns; j++) {
+                    if (this._isSlotEmpty(grid, [i, j])) {
+                        unassignedLocation.push(i, j);
+                        break;
+                    }
+                }
+            } else {
+                break;
+            }
+        }
+
+        return unassignedLocation;
+    }
+
     _getPopulatedGrid(grid, remainingSlotsToFill) {
         if (remainingSlotsToFill === 0) {
             return grid;
@@ -128,6 +147,31 @@ class Grid extends Component {
         this.setState({
             grid: populatedGrid
         });
+    }
+
+    solve(grid = this.state.grid) {
+        const location = this._getNextUnassignedLocation(grid);
+
+        if (location.length !== 0) {
+            for (let i = 1; i <= 9; i++) {
+                if (this._isFilledSlotValid(grid, location, i)) {
+                    grid[location[0]][location[1]] = i;
+
+                    if (this.solve(grid)) {
+                        return true;
+                    } else {
+                        grid[location[0]][location[1]] = 0;
+                    }
+                }
+            }
+
+            return false;
+        } else {
+            this.setState({
+                grid
+            });
+            return true;
+        }
     }
 
     componentWillMount() {
