@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import * as R from "ramda";
 import Row from "./Row";
 import styles from "./styles";
 
@@ -14,16 +15,38 @@ class Grid extends Component {
 
         this.state = {
             grid: [],
-            difficulty: "EASY"
+            difficulty: "HARD"
         };
+    }
+
+    _backTrack(grid) {
+        const location = this._getNextUnassignedLocation(grid);
+
+        if (location.length !== 0) {
+            for (let i = 1; i <= 9; i++) {
+                if (this._isFilledSlotValid(grid, location, i)) {
+                    grid[location[0]][location[1]] = i;
+
+                    if (this._backTrack(grid)) {
+                        return grid;
+                    } else {
+                        grid[location[0]][location[1]] = 0;
+                    }
+                }
+            }
+
+            return false;
+        } else {
+            return grid;
+        }
     }
 
     _fillSlot(grid) {
         const location = this._getRandomLocation(grid);
         const digit = this._getRandomNumber(1, 9);
 
-        if (this._isFilledSlotValid(grid, location, digit)) {
-            const updatedGrid = [...grid];
+        if (this._isFilledSlotValid(grid, location, digit) && this._backTrack(R.clone(grid))) {
+            const updatedGrid = R.clone(grid);
             updatedGrid[location[0]][location[1]] = digit;
             return updatedGrid;
         } else {
@@ -67,7 +90,7 @@ class Grid extends Component {
         if (remainingSlotsToFill === 0) {
             return grid;
         } else {
-            const updatedGrid = this._fillSlot([...grid]);
+            const updatedGrid = this._fillSlot(grid);
             return this._getPopulatedGrid(updatedGrid, remainingSlotsToFill - 1);
         }
     }
@@ -142,7 +165,7 @@ class Grid extends Component {
     generate() {
         const emptyGrid = this._getEmptyGrid(this.props.rows, this.props.columns);
         const slotsToFill = this.difficultyMap[this.state.difficulty];
-        const populatedGrid = this._getPopulatedGrid([...emptyGrid], slotsToFill);
+        const populatedGrid = this._getPopulatedGrid(emptyGrid, slotsToFill);
 
         this.setState({
             grid: populatedGrid
@@ -150,28 +173,9 @@ class Grid extends Component {
     }
 
     solve(grid = this.state.grid) {
-        const location = this._getNextUnassignedLocation(grid);
-
-        if (location.length !== 0) {
-            for (let i = 1; i <= 9; i++) {
-                if (this._isFilledSlotValid(grid, location, i)) {
-                    grid[location[0]][location[1]] = i;
-
-                    if (this.solve(grid)) {
-                        return true;
-                    } else {
-                        grid[location[0]][location[1]] = 0;
-                    }
-                }
-            }
-
-            return false;
-        } else {
-            this.setState({
-                grid
-            });
-            return true;
-        }
+        this.setState({
+            grid: this._backTrack(grid)
+        });
     }
 
     componentWillMount() {
